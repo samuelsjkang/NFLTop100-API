@@ -4,30 +4,32 @@ from django.contrib.auth.models \
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None):
-        '''Creates and saves User with email and password'''
+    '''Creates and saves a user'''
+    def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('User did not provide email address')
         user = self.model(
             email=self.normalize_email(email),
+            **extra_fields
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
-        '''Creates a superuser'''
+    '''Creates a superuser'''
+    def create_superuser(self, email, password, **extra_fields):
         user = self.create_user(
             email,
-            password=password
+            password=password,
+            **extra_fields
         )
-        user.is_admin = True
+        user.is_superuser = True
+        user.is_staff = True
         user.save(using=self._db)
         return user
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    '''Custom User model that uses email and password'''
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
@@ -35,7 +37,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
 
