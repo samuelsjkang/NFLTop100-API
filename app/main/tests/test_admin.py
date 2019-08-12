@@ -20,19 +20,19 @@ class AdminPageTests(TestCase):
             name='Test user'
         )
 
-    '''Tests that users are listed on the page'''
+    # Tests that users are listed on the page
     def test_list_users(self):
         url = reverse('admin:main_user_changelist')
         res = self.client.get(url)
         self.assertContains(res, self.user.email)
 
-    '''Tests that user edit page loads'''
+    # Tests that user edit page loads
     def test_user_edit_page(self):
         url = reverse('admin:main_user_change', args=[self.user.id])
         res = self.client.get(url)
         self.assertEqual(res.status_code, 200)
 
-    '''Tests that create user page loads'''
+    # Tests that create user page loads
     def test_user_create_page(self):
         url = reverse('admin:main_user_add')
         res = self.client.get(url)

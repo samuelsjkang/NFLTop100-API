@@ -4,7 +4,7 @@ from django.contrib.auth.models \
 
 
 class UserManager(BaseUserManager):
-    '''Creates and saves a user'''
+    # Creates and saves a user
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('User did not provide email address')
@@ -16,7 +16,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    '''Creates a superuser'''
+    # Creates a superuser
     def create_superuser(self, email, password, **extra_fields):
         user = self.create_user(
             email,

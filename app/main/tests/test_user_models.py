@@ -5,7 +5,7 @@ User = get_user_model()
 
 
 class UserModelTests(TestCase):
-    '''Tests creation of new user'''
+    # Tests creation of new user
     def test_create_user(self):
         email = 'user@gmail.com'
         pw = 'password'
@@ -16,7 +16,7 @@ class UserModelTests(TestCase):
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(pw))
 
-    '''Tests that email for a user is normalized'''
+    # Tests that email for a user is normalized
     def test_normalized_email(self):
         email = 'user@GmAiL.cOm'
         user = User.objects.create_user(
@@ -25,12 +25,12 @@ class UserModelTests(TestCase):
         )
         self.assertEqual(user.email, email.lower())
 
-    '''Tests that user creation requires email'''
+    # Tests that user creation requires email
     def test_email_present(self):
         with self.assertRaises(ValueError):
             User.objects.create_user(None, 'password')
 
-    '''Tests superuser creation'''
+    # Tests superuser creation
     def test_create_superuser(self):
         user = User.objects.create_superuser(
             'sam@gmail.com',
