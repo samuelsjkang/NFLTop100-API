@@ -3,7 +3,9 @@ from main.models import Player
 from top100 import serializers
 
 
-class PlayerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class PlayerViewSet(viewsets.GenericViewSet,
+                    mixins.ListModelMixin,
+                    mixins.CreateModelMixin):
     # Manage players in db
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Player.objects.all()
