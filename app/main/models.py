@@ -43,3 +43,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
+class Player(models.Model):
+    # Name of the player
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
