@@ -16,8 +16,16 @@ class PlayersAPITests(TestCase):
 
     # Tests that request is successful
     def test_get_players(self):
-        Player.objects.create(name='Aaron Donald')
-        Player.objects.create(name='Drew Brees')
+        Player.objects.create(
+            name='Aaron Donald',
+            ranking='1',
+            last_ranking='7'
+        )
+        Player.objects.create(
+            name='Drew Brees',
+            ranking='2',
+            last_ranking='8'
+        )
 
         res = self.client.get(PLAYERS_URL)
         players = Player.objects.all().order_by('name')
@@ -37,7 +45,11 @@ class AdminPlayersAPITests(TestCase):
 
     # Tests player creation
     def test_player_creation(self):
-        payload = {'name': 'Test Player'}
+        payload = {
+            'name': 'Test Player',
+            'ranking': '100',
+            'last_ranking': '99'
+        }
         self.client.post(PLAYERS_URL, payload)
         player_exists = Player.objects.filter(
             name=payload['name']

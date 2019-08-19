@@ -4,6 +4,7 @@ from top100 import views
 
 router = DefaultRouter()
 router.register('players', views.PlayerViewSet)
+router.register('teams', views.TeamViewSet)
 app_name = 'top100'
 
 urlpatterns = [

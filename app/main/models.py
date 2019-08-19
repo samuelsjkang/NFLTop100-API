@@ -45,8 +45,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
+# Player Model
 class Player(models.Model):
-    # Name of the player
+    name = models.CharField(max_length=255)
+    ranking = models.IntegerField()
+    last_ranking = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
+
+# Team Model
+class Team(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
