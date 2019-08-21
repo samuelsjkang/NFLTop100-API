@@ -16,7 +16,7 @@ class BaseAttributeViewSet(viewsets.GenericViewSet,
         queryset = self.queryset
         if assigned_only:
             queryset = queryset.filter(player__isnull=False)
-        return queryset.order_by('name').distinct()
+        return queryset.order_by('id').distinct()
 
     def perform_create(self, serializer):
         serializer.save()

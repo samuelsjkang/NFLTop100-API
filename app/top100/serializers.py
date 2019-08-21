@@ -17,14 +17,16 @@ class PositionSerializer(serializers.ModelSerializer):
 
 
 class PlayerSerializer(serializers.ModelSerializer):
-    team = serializers.PrimaryKeyRelatedField(
+    team = serializers.SlugRelatedField(
         many=True,
-        queryset=Team.objects.all()
-    )
-    position = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.all(),
+        slug_field='name'
+     )
+    position = serializers.SlugRelatedField(
         many=True,
-        queryset=Position.objects.all()
-    )
+        queryset=Position.objects.all(),
+        slug_field='name'
+     )
 
     class Meta:
         model = Player

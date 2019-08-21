@@ -91,7 +91,7 @@ class AdminPlayersAPITests(TestCase):
         payload = {
             'name': 'Test Player',
             'ranking': 100,
-            'team': team.id,
+            'team': team.name,
             'last_ranking': 99
         }
         res = self.client.post(PLAYERS_URL, payload)
@@ -103,7 +103,7 @@ class AdminPlayersAPITests(TestCase):
         payload = {
             'name': 'A Player',
             'ranking': 100,
-            'position': position.id,
+            'position': position.name,
             'last_ranking': 99
         }
         res = self.client.post(PLAYERS_URL, payload)
@@ -116,7 +116,7 @@ class AdminPlayersAPITests(TestCase):
         new_team = sample_team(name='Arizona Cardinals')
         payload = {
             'name': 'Updated Player',
-            'team': new_team.id
+            'team': new_team.name
         }
         url = detail_url(player.id)
         res = self.client.patch(url, payload)
