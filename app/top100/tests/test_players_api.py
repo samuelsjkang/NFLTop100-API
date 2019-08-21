@@ -143,3 +143,53 @@ class AdminPlayersAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         position = player.position.all()
         self.assertEqual(len(position), 0)
+
+
+class FilterAPITests(TestCase):
+    def setUp(self):
+        self.user = UserModel.objects.create_superuser(
+            'test@gmail.com',
+            'password'
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
+
+    # Tests filtering by team
+    def test_team_filter(self):
+        player1 = sample_player(name='Baker Mayfield')
+        player2 = sample_player(name='Antonio Brown')
+        team1 = sample_team(name='Cleveland Browns')
+        team2 = sample_team(name='Pittsburgh Steelers')
+        player1.team.add(team1)
+        player2.team.add(team2)
+        player3 = sample_player(name='Tom Brady')
+        res = self.client.get(
+            PLAYERS_URL,
+            {'team': f'{team1.id},{team2.id}'}
+        )
+        serializer1 = PlayerSerializer(player1)
+        serializer2 = PlayerSerializer(player2)
+        serializer3 = PlayerSerializer(player3)
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+    # Tests filtering by position
+    def test_position_filter(self):
+        player1 = sample_player(name='Tom Brady')
+        player2 = sample_player(name='Julio Jones')
+        position1 = sample_position(name='QB')
+        position2 = sample_position(name='WR')
+        player1.position.add(position1)
+        player2.position.add(position2)
+        player3 = sample_player(name='Todd Gurley')
+        res = self.client.get(
+            PLAYERS_URL,
+            {'position': f'{position1.id},{position2.id}'}
+        )
+        serializer1 = PlayerSerializer(player1)
+        serializer2 = PlayerSerializer(player2)
+        serializer3 = PlayerSerializer(player3)
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)

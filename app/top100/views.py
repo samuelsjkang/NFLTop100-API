@@ -9,6 +9,15 @@ class BaseAttributeViewSet(viewsets.GenericViewSet,
     # Base viewset for player attributes
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(player__isnull=False)
+        return queryset.order_by('name').distinct()
+
     def perform_create(self, serializer):
         serializer.save()
 
@@ -18,6 +27,21 @@ class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.all()
     serializer_class = serializers.PlayerSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def params_to_ints(self, qs):
+        return [int(str_id) for str_id in qs.split(',')]
+
+    def get_queryset(self):
+        team = self.request.query_params.get('team')
+        position = self.request.query_params.get('position')
+        queryset = self.queryset
+        if team:
+            team_ids = self.params_to_ints(team)
+            queryset = queryset.filter(team__id__in=team_ids)
+        if position:
+            position_ids = self.params_to_ints(position)
+            queryset = queryset.filter(position__id__in=position_ids)
+        return queryset.order_by('id')
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

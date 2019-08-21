@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
-from main.models import Position
+from main.models import Position, Player
 from top100.serializers import PositionSerializer
 
 UserModel = get_user_model()
@@ -49,3 +49,22 @@ class AdminPositionsAPITests(TestCase):
         payload = {'name': ''}
         res = self.client.post(POSITIONS_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # Tests filtering positions that have players in the top 100
+    def test_filter_assigned_positions(self):
+        position = Position.objects.create(name='LB')
+        Position.objects.create(name='WR')
+        player1 = Player.objects.create(
+            name='Von Miller',
+            ranking=10,
+            last_ranking=9
+        )
+        player1.position.add(position)
+        player2 = Player.objects.create(
+            name='Luke Kuechly',
+            ranking=24,
+            last_ranking=12
+        )
+        player2.position.add(position)
+        res = self.client.get(POSITIONS_URL, {'assigned_only': 1})
+        self.assertEqual(len(res.data), 1)
