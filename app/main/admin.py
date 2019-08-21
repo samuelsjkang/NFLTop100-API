@@ -22,3 +22,4 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Player)
 admin.site.register(models.Team)
+admin.site.register(models.Position)

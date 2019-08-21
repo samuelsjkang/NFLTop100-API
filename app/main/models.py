@@ -49,7 +49,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Player(models.Model):
     name = models.CharField(max_length=255)
     ranking = models.IntegerField()
+    team = models.ManyToManyField('Team')
+    position = models.ManyToManyField('Position')
     last_ranking = models.IntegerField()
+    youtube_link = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.name
@@ -57,6 +60,14 @@ class Player(models.Model):
 
 # Team Model
 class Team(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+# Position Model
+class Position(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):

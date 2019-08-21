@@ -3,11 +3,37 @@ from django.urls import reverse
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
-from main.models import Player
-from top100.serializers import PlayerSerializer
+from main.models import Player, Team, Position
+from top100.serializers import PlayerSerializer, DetailSerializer
 
 UserModel = get_user_model()
 PLAYERS_URL = reverse('top100:player-list')
+
+
+# Creates a sample player
+def sample_player(**params):
+    defaults = {
+        'name': 'Sample Player',
+        'ranking': 4,
+        'last_ranking': 7
+    }
+    defaults.update(params)
+    return Player.objects.create(**defaults)
+
+
+# Creates a sample team
+def sample_team(name='Seattle Seahawks'):
+    return Team.objects.create(name=name)
+
+
+# Creates a sample position
+def sample_position(name='QB'):
+    return Position.objects.create(name=name)
+
+
+# Return url to player's details
+def detail_url(player_id):
+    return reverse('top100:player-detail', args=[player_id])
 
 
 class PlayersAPITests(TestCase):
@@ -16,21 +42,24 @@ class PlayersAPITests(TestCase):
 
     # Tests that request is successful
     def test_get_players(self):
-        Player.objects.create(
-            name='Aaron Donald',
-            ranking='1',
-            last_ranking='7'
-        )
-        Player.objects.create(
-            name='Drew Brees',
-            ranking='2',
-            last_ranking='8'
-        )
+        sample_player()
+        sample_player()
 
         res = self.client.get(PLAYERS_URL)
-        players = Player.objects.all().order_by('name')
+        players = Player.objects.all().order_by('ranking')
         serializer = PlayerSerializer(players, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    # Tests viewing player's details
+    def test_view_details(self):
+        player = sample_player()
+        player.team.add(sample_team())
+        player.position.add(sample_position())
+
+        url = detail_url(player.id)
+        res = self.client.get(url)
+        serializer = DetailSerializer(player)
         self.assertEqual(res.data, serializer.data)
 
 
@@ -47,17 +76,70 @@ class AdminPlayersAPITests(TestCase):
     def test_player_creation(self):
         payload = {
             'name': 'Test Player',
-            'ranking': '100',
-            'last_ranking': '99'
+            'ranking': 100,
+            'last_ranking': 99
         }
-        self.client.post(PLAYERS_URL, payload)
-        player_exists = Player.objects.filter(
-            name=payload['name']
-        ).exists()
-        self.assertTrue(player_exists)
-
-    # Tests invalid player creation
-    def test_invalid_player(self):
-        payload = {'name': ''}
         res = self.client.post(PLAYERS_URL, payload)
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        player = Player.objects.get(id=res.data['id'])
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(player, key))
+
+    # Tests player creation w/ team
+    def test_player_team(self):
+        team = sample_team(name='New England Patriots')
+        payload = {
+            'name': 'Test Player',
+            'ranking': 100,
+            'team': team.id,
+            'last_ranking': 99
+        }
+        res = self.client.post(PLAYERS_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    # Tests player creation w/ position
+    def test_player_position(self):
+        position = sample_position(name='QB')
+        payload = {
+            'name': 'A Player',
+            'ranking': 100,
+            'position': position.id,
+            'last_ranking': 99
+        }
+        res = self.client.post(PLAYERS_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    # Tests updating player w/ patch
+    def test_patch_player(self):
+        player = sample_player()
+        player.team.add(sample_team(name='Miami Dolphins'))
+        new_team = sample_team(name='Arizona Cardinals')
+        payload = {
+            'name': 'Updated Player',
+            'team': new_team.id
+        }
+        url = detail_url(player.id)
+        res = self.client.patch(url, payload)
+        player.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        team = player.team.all()
+        self.assertIn(new_team, team)
+
+    # Tests updating player w/ put
+    def test_put_player(self):
+        player = sample_player()
+        player.position.add(sample_position(name='LB'))
+        payload = {
+            'name': 'Fully-updated Player',
+            'ranking': 75,
+            'last_ranking': 80
+        }
+        url = detail_url(player.id)
+        res = self.client.put(url, payload)
+        player.refresh_from_db()
+        self.assertEqual(player.name, payload['name'])
+        self.assertEqual(player.ranking, payload['ranking'])
+        self.assertEqual(player.last_ranking, payload['last_ranking'])
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        position = player.position.all()
+        self.assertEqual(len(position), 0)
