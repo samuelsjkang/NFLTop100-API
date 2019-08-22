@@ -15,3 +15,4 @@ COPY ./app /app
 
 RUN adduser -D user
 USER user
+CMD python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT
